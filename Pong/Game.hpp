@@ -25,7 +25,7 @@ namespace Pong
     static constexpr glm::vec2 PADDLE_VELOCITY(0.0f, 10.0f);
     static constexpr glm::vec2 BALL_INITIAL_VELOCITY(5.0f, 5.0f);
     static constexpr glm::vec2 BALL_VELOCITY_INCREASE(0.2f, 0.2f);
-    static constexpr float BALL_VELOCITY_COMPONENT_RANDOMNESS = 2.0f;
+    static constexpr float BALL_VELOCITY_COMPONENT_RANDOMNESS = 1.0f;
     class Game
     {
     public:
@@ -66,8 +66,9 @@ namespace Pong
 
         virtual void OnInit(void) 
         {
-            m_Paddle1 = std::make_unique<PhysicsObject>("./brick.jpg");
-            m_Paddle2 = std::make_unique<PhysicsObject>("./brick.jpg");
+            m_IsPaused = true;
+            m_Paddle1 = std::make_unique<PhysicsObject>("./paddle.jpg");
+            m_Paddle2 = std::make_unique<PhysicsObject>("./paddle.jpg");
             std::array<glm::vec4, 4> square = 
             {{
                 glm::vec4(9.0f, 9.0f, 1.0f, 1.0f), // top right 0
@@ -75,7 +76,7 @@ namespace Pong
                 glm::vec4(-9.0f, -9.0f, 0.0f, 0.0f), // bottom left 2 
                 glm::vec4(-9.0f, 9.0f, 0.0f, 1.0f) // top left 3
             }};
-            m_Ball = std::make_unique<PhysicsObject>("./ball.jpg", square);
+            m_Ball = std::make_unique<PhysicsObject>("./ball.png", square);
 
             m_Paddle1->SetTranslate(glm::vec3(-12.0f, 0.0f, 0.0f));
             m_Paddle2->SetTranslate(glm::vec3(+12.0f, 0.0f, 0.0f));
@@ -90,12 +91,36 @@ namespace Pong
 
         virtual void Update(float dt)
         {
+            if(m_EventHandler->IsKeyPressed(HGL::Key::Escape))
+                m_IsPaused = true;
+            if(m_EventHandler->IsKeyPressed(HGL::Key::Space))
+                m_IsPaused = false;
+            if(m_IsPaused)
+                return;
+
+            if(dt > 1.0f/30.0f)
+                dt = 1.0f/30.0f;
             m_Ball->Update(dt);
             
 
             m_Paddle1->UpdateModel();
             m_Paddle2->UpdateModel();
             m_Ball->UpdateModel();
+
+            if(m_Ball->GetWorldPosition()[0].x >= 17.0f)
+            {
+                std::println("1: {}", m_Ball->GetWorldPosition()[0].x);
+                ++m_Player1Score;
+                OnInit();
+                return;
+            }
+            if(m_Ball->GetWorldPosition()[0].x <= -17.0f)
+            {
+                std::println("2: {}", m_Ball->GetWorldPosition()[0].x);
+                ++m_Player2Score;
+                OnInit();
+                return;
+            }
 
             const auto& paddle1Position = m_Paddle1->GetWorldPosition();
             const auto& paddle2Position = m_Paddle2->GetWorldPosition();
@@ -128,7 +153,55 @@ namespace Pong
 
             if(m_Ball->CollidesWith(*m_Paddle1) || m_Ball->CollidesWith(*m_Paddle2))
             {
-                m_Ball->SetVelocity(m_Ball->GetVelocity() * glm::vec2(-1.0f, 1.0f));
+                float p1x = paddle1Position[3].x;
+                float p1y = paddle1Position[3].y;
+
+                float p2x = paddle2Position[3].x;
+                float p2y = paddle2Position[3].y;
+
+                float bx = ballWorldCords[3].x;
+                float by = ballWorldCords[3].y;
+
+                glm::vec2 velocityMultipler(1.0f);
+                if(m_Ball->GetVelocity().x == 0.0f)
+                {
+                    m_Ball->SetVelocity(glm::vec2(m_Ball->GetVelocity().x, m_Ball->GetVelocity().x));
+                }
+                
+                
+                float bm = m_Ball->GetVelocity().y / m_Ball->GetVelocity().x;
+                float sol1x = p1x;
+                float sol1y = bm * (p1x - bx) + by;
+
+                float sol2x = p2x;
+                float sol2y = bm * (p2x - bx) + by;
+
+                bool isSol1Ceil, isSol2Ceil;
+
+                isSol1Ceil = sol1y == m_Paddle1->GetWorldPosition()[0].y || sol1y == m_Paddle1->GetWorldPosition()[1].y;
+                isSol2Ceil = sol2y == m_Paddle2->GetWorldPosition()[0].y || sol2y == m_Paddle2->GetWorldPosition()[1].y;
+
+                auto getDistanceSquare = [](float x1, float y1, float x2, float y2) -> float
+                {
+                    return (x2 - x1) *  (x2 - x1) + (y2 - y1) * (y2 - y1);
+                };
+
+                if(getDistanceSquare(sol1x, sol1y, bx, by) < getDistanceSquare(sol2x, sol2y, bx, by))
+                {
+                    //sol1 is the nearest point
+                    if(isSol1Ceil) velocityMultipler = glm::vec2(+1.0f, -1.0f);
+                    else velocityMultipler = glm::vec2(-1.0f, +1.0f);
+                }
+                else
+                {
+                    if(isSol2Ceil) velocityMultipler = glm::vec2(+1.0f, -1.0f);
+                    else velocityMultipler = glm::vec2(-1.0f, +1.0f);
+                }
+                    
+                
+                
+                m_Ball->SetVelocity(m_Ball->GetVelocity() * velocityMultipler);
+                
                 m_Ball->SetVelocity(
                     m_Ball->GetVelocity() + m_Ball->GetVelocity() * BALL_VELOCITY_INCREASE + 
                     glm::vec2
@@ -201,6 +274,10 @@ namespace Pong
 
         float m_TimeEllapsed = 0.0f;
 
+        uint16_t m_Player1Score = 0, m_Player2Score = 0;
+
         RNG m_RNG;
+
+        bool m_IsPaused = true;
     };  
 }

@@ -117,9 +117,6 @@ namespace Pong
             {
                 glm::vec4 localPos = glm::vec4(vertex.x, vertex.y, 0.0f, 1.0f);
                 glm::vec4 worldPos = m_Model * localPos;
-
-                std::println("({0}, {1}, {2}, {3})",worldPos.x, worldPos.y, worldPos.z, worldPos.w);
-
                 m_WorldPos[i++] = glm::vec2(worldPos.x, worldPos.y);
             }
         }

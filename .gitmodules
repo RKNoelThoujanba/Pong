@@ -9,3 +9,6 @@
 [submodule "vendor/glm"]
 	path = vendor/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "vendor/glText"]
+	path = vendor/glText
+	url = https://github.com/vallentin/glText.git
