@@ -29,6 +29,7 @@ target_include_directories(Pong PRIVATE vendor/glad/include)
 target_include_directories(Pong PRIVATE vendor/stb)
 target_include_directories(Pong PRIVATE HGL/include)
 
+
 set_property(TARGET Pong PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/")
 add_compile_definitions("$<$<NOT:$<CONFIG:Debug>>:NDEBUG>")
 

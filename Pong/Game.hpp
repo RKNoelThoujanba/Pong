@@ -216,7 +216,6 @@ namespace Pong
         //translate->rotate->scale
         void RunGame()
         {
-
             OnInit();
 
             m_Shader->Bind();
@@ -254,7 +253,6 @@ namespace Pong
                 renderEntity(*m_Paddle1);
                 renderEntity(*m_Paddle2);
                 renderEntity(*m_Ball);
-                
                 
                 m_Window->SwapBuffers();
                 m_Window->PollEvents();
