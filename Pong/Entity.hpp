@@ -8,24 +8,23 @@
 #include <IndexBuffer.hpp>
 #include <Texture.hpp>
 #include <string_view>
+#include <glm/gtc/quaternion.hpp>
 
 namespace Pong
 {
     class Entity
     {
     public:
-        Entity(std::string_view texPath)
-            :m_Model(1.0f), 
-            m_Pos
-            (
-                {
+        Entity(
+            std::filesystem::path texPath, 
+            std::array<glm::vec4, 4> pos = {{
                     glm::vec4(16.0f, 9.0f, 1.0f, 1.0f), // top right
                     glm::vec4(16.0f, -9.0f, 1.0f, 0.0f), // bottom right
                     glm::vec4(-16.0f, -9.0f, 0.0f, 0.0f), // bottom left
                     glm::vec4(-16.0f, 9.0f, 0.0f, 1.0f) // top left
-                }
-            ),
-            m_Texture(texPath.data())
+                }}
+            )
+            :m_InitialModel(1.0f), m_Texture(texPath), m_Pos(pos), m_Translate(0.0f), m_Rotation(0.0f, glm::vec3(0.0f)), m_Scale(1.0f)
         {
             uint32_t indices[] = {0, 1, 3, 1, 2, 3};
 
@@ -33,26 +32,49 @@ namespace Pong
             HGL::VertexBufferLayout vbl;
             vbl.AddElements<float, 2>(); //x,y cords
             vbl.AddElements<float, 2>(); // tex cords
+            m_VBO.Bind();
+            m_VAO.SetVertexBufferLayout(vbl);
 
             m_VBO.SetData(m_Pos.data(), m_Pos.size() * sizeof(float) * 4, HGL::VertexBuffer::Usage::STATIC_DRAW);
             m_IBO.SetData(indices, 6, HGL::IndexBuffer::Usage::STATIC_DRAW);
 
-            m_VAO.SetVertexBufferLayout(vbl);
+            for(size_t i = 0; i < 4; ++i)
+            {
+                m_WorldPos[i] = glm::vec2(pos[i].x, pos[i].y);
+            }
         }
 
-        void Rotate(float angleRad, const glm::vec3& axis)
+        virtual ~Entity() = default;
+
+        void SetRotate(float angleRad, const glm::vec3& axis)
         {
-            m_Model = glm::rotate(m_Model, angleRad, axis);
+            m_Rotation = glm::angleAxis(angleRad, axis);
         }
 
-        void Scale(const glm::vec3& scale)
+        void SetScale(const glm::vec3& scale)
         {
-            m_Model = glm::scale(m_Model, scale);
+            m_Scale = scale;
         }
 
-        void Translate(const glm::vec3& translate)
+        void SetTranslate(const glm::vec3& translate)
         {
-            m_Model = glm::translate(m_Model, translate);
+            m_Translate = translate;
+        }
+
+        void AddRotate(float angleRad, const glm::vec3& axis)
+        {
+            glm::quat additionalRotation = glm::angleAxis(angleRad, glm::normalize(axis));
+            m_Rotation *= additionalRotation;
+        }
+
+        void AddScale(const glm::vec3& scale)
+        {
+            m_Scale *= scale;
+        }
+
+        void AddTranslate(const glm::vec3 translate)
+        {
+            m_Translate += translate;
         }
 
         const glm::mat4& GetModel(void) const
@@ -77,15 +99,43 @@ namespace Pong
         {
             return m_Texture;
         }
-        
 
+        const std::array<glm::vec2, 4>& GetWorldPosition(void) const
+        {
+            return m_WorldPos;
+        }
+
+        void UpdateModel()
+        {
+            m_Model = glm::translate(m_InitialModel, m_Translate);
+            m_Model *= glm::mat4_cast(m_Rotation);
+            m_Model = glm::scale(m_Model, m_Scale);
+
+            size_t i = 0;
+
+            for(auto& vertex : m_Pos)
+            {
+                glm::vec4 localPos = glm::vec4(vertex.x, vertex.y, 0.0f, 1.0f);
+                glm::vec4 worldPos = m_Model * localPos;
+
+                std::println("({0}, {1}, {2}, {3})",worldPos.x, worldPos.y, worldPos.z, worldPos.w);
+
+                m_WorldPos[i++] = glm::vec2(worldPos.x, worldPos.y);
+            }
+        }
+        
     private:
-        glm::mat4 m_Model;
-        std::vector<glm::vec4> m_Pos;
+        glm::mat4 m_InitialModel, m_Model;
         
         HGL::VertexArray m_VAO;
         HGL::VertexBuffer m_VBO;
         HGL::IndexBuffer m_IBO;
         HGL::Texture2D m_Texture;
+        std::array<glm::vec4, 4> m_Pos;
+        glm::vec3 m_Translate;
+        glm::quat m_Rotation;
+        glm::vec3 m_Scale;
+
+        std::array<glm::vec2, 4> m_WorldPos;
     };
 }
