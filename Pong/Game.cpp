@@ -20,7 +20,33 @@ namespace Pong
             #endif
 
             //TODO: import resolutions from cfg file
-            Resolution res = ValidResolutions[0]; //720p
+             //720p
+
+            if(args.size() != 3)
+            {
+                throw std::runtime_error("Invalid args. Provide Resolution");
+            }
+
+            int width = std::stoi(args[1]);
+            int height = std::stoi(args[2]);
+
+            bool resFound = false;
+            for(const auto& resolution : ValidResolutions)
+            {
+                if(width == resolution.Width && height == resolution.Height)
+                {
+                    resFound = true;
+                    break;
+                }
+            }
+
+            if(!resFound)
+            {
+                throw std::runtime_error("Invalid Resolution\n");
+            }
+
+            Resolution res = {width, height};
+
             windowProperties.Width = res.Width;
             windowProperties.Height = res.Height;
 

@@ -19,7 +19,7 @@ namespace HGL
         int width, height, numChannels;
 
         stbi_set_flip_vertically_on_load(true);
-        //for some reason, std::filesystem::path::c_str() returns a const wchar_t* instead of const char*
+
         std::unique_ptr<uint8_t, void(*)(uint8_t*)> imageData(
             stbi_load(path.string().c_str(), &width, &height, &numChannels, 4), 
             [](uint8_t* data) {stbi_image_free(static_cast<void*>(data));}

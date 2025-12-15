@@ -18,7 +18,7 @@
 
 namespace Pong
 {
-    static constexpr glm::vec2 PADDLE_VELOCITY(0.0f, 10.0f);
+    static constexpr glm::vec2 PADDLE_VELOCITY(0.0f, 15.0f);
     static constexpr glm::vec2 BALL_INITIAL_VELOCITY(5.0f, 5.0f);
     static constexpr glm::vec2 BALL_VELOCITY_INCREASE(0.2f, 0.2f);
     static constexpr float BALL_VELOCITY_COMPONENT_RANDOMNESS = 1.0f;
