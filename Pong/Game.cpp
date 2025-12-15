@@ -148,15 +148,21 @@ namespace Pong
             if(ballWorldCords[0].y >= +9.0f || ballWorldCords[1].y <= -9.0f)
             {
                 m_Ball->SetVelocity(m_Ball->GetVelocity() * glm::vec2(1.0f, -1.0f));
+                m_Ball->SetVelocity(
+                    m_Ball->GetVelocity() + m_Ball->GetVelocity() * BALL_VELOCITY_INCREASE + 
+                    glm::vec2
+                    (
+                        m_RNG.UniformDistribution<float>(-BALL_VELOCITY_COMPONENT_RANDOMNESS, +BALL_VELOCITY_COMPONENT_RANDOMNESS),
+                        m_RNG.UniformDistribution<float>(-BALL_VELOCITY_COMPONENT_RANDOMNESS, +BALL_VELOCITY_COMPONENT_RANDOMNESS)
+                    )
+                );
             }
 
             if(m_Ball->CollidesWith(*m_Paddle1) || m_Ball->CollidesWith(*m_Paddle2))
             {
                 float p1x = paddle1Position[3].x;
-                float p1y = paddle1Position[3].y;
 
                 float p2x = paddle2Position[3].x;
-                float p2y = paddle2Position[3].y;
 
                 float bx = ballWorldCords[3].x;
                 float by = ballWorldCords[3].y;

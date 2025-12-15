@@ -51,7 +51,7 @@ if(MSVC)
 
 else()
 
-    target_compile_options(Pong  PRIVATE -Wall -Wextra -pedantic -Werror -Wno-language-extension-token)
+    target_compile_options(Pong  PRIVATE -Wall -Wextra -pedantic -Werror)
 
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
