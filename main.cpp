@@ -1,4 +1,4 @@
-#include "Pong/Game.hpp"
+#include "Pong/include/Game.hpp"
 #include <vector>
 
 int main(int argc, char* argv[])

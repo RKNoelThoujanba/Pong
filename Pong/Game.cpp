@@ -1,35 +1,12 @@
-#pragma once
-
-#include <iostream>
-#include "Resolutions.hpp"
-#include <memory>
-#include <print>
-#include <vector>
-#include <Shader.hpp>
-#include <Texture.hpp>
-#include <glm/glm.hpp>
-#include <VertexArray.hpp>
-#include <IndexBuffer.hpp>
+#include "include/Game.hpp"
+#include <chrono>
+#include "include/Resolutions.hpp"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "Entity.hpp"
-#include <chrono>
-#include "PhysicsObject.hpp"
-#include <EventHandler.hpp>
-#include "Random.hpp"
-
-
 
 namespace Pong
 {
-    static constexpr glm::vec2 PADDLE_VELOCITY(0.0f, 10.0f);
-    static constexpr glm::vec2 BALL_INITIAL_VELOCITY(5.0f, 5.0f);
-    static constexpr glm::vec2 BALL_VELOCITY_INCREASE(0.2f, 0.2f);
-    static constexpr float BALL_VELOCITY_COMPONENT_RANDOMNESS = 1.0f;
-    class Game
-    {
-    public:
-        Game(const std::vector<const char*>& args)
+    Game::Game(const std::vector<const char*>& args)
         {
             (void) args;
 
@@ -59,16 +36,14 @@ namespace Pong
 
             //TODO: err check
 
-            m_Shader = std::make_unique<HGL::Shader>("./vertex.glsl", "./fragment.glsl");
+            m_Shader = std::make_unique<HGL::Shader>("./Resources/Shaders/vertex.glsl", "./Resources/Shaders/fragment.glsl");
         }
 
-        virtual ~Game() = default;
-
-        virtual void OnInit(void) 
+        void Game::OnInit(void) 
         {
             m_IsPaused = true;
-            m_Paddle1 = std::make_unique<PhysicsObject>("./paddle.jpg");
-            m_Paddle2 = std::make_unique<PhysicsObject>("./paddle.jpg");
+            m_Paddle1 = std::make_unique<PhysicsObject>("./Resources/Textures/paddle.jpg");
+            m_Paddle2 = std::make_unique<PhysicsObject>("./Resources/Textures/paddle.jpg");
             std::array<glm::vec4, 4> square = 
             {{
                 glm::vec4(9.0f, 9.0f, 1.0f, 1.0f), // top right 0
@@ -76,7 +51,7 @@ namespace Pong
                 glm::vec4(-9.0f, -9.0f, 0.0f, 0.0f), // bottom left 2 
                 glm::vec4(-9.0f, 9.0f, 0.0f, 1.0f) // top left 3
             }};
-            m_Ball = std::make_unique<PhysicsObject>("./ball.png", square);
+            m_Ball = std::make_unique<PhysicsObject>("./Resources/Textures/ball.png", square);
 
             m_Paddle1->SetTranslate(glm::vec3(-12.0f, 0.0f, 0.0f));
             m_Paddle2->SetTranslate(glm::vec3(+12.0f, 0.0f, 0.0f));
@@ -89,7 +64,7 @@ namespace Pong
         }
 
 
-        virtual void Update(float dt)
+        void Game::Update(float dt)
         {
             if(m_EventHandler->IsKeyPressed(HGL::Key::Escape))
                 m_IsPaused = true;
@@ -109,14 +84,12 @@ namespace Pong
 
             if(m_Ball->GetWorldPosition()[0].x >= 17.0f)
             {
-                std::println("1: {}", m_Ball->GetWorldPosition()[0].x);
                 ++m_Player1Score;
                 OnInit();
                 return;
             }
             if(m_Ball->GetWorldPosition()[0].x <= -17.0f)
             {
-                std::println("2: {}", m_Ball->GetWorldPosition()[0].x);
                 ++m_Player2Score;
                 OnInit();
                 return;
@@ -214,7 +187,7 @@ namespace Pong
         }
 
         //translate->rotate->scale
-        void RunGame()
+        void Game::RunGame()
         {
             OnInit();
 
@@ -264,18 +237,4 @@ namespace Pong
                 // /std::println("FPS: {}", 1.0f/dt);
             }
         }
-    private:
-        std::unique_ptr<PhysicsObject> m_Ball, m_Paddle1, m_Paddle2;
-        std::unique_ptr<HGL::Window> m_Window = nullptr;
-        std::unique_ptr<HGL::Shader> m_Shader = nullptr;
-        std::unique_ptr<HGL::EventHandler> m_EventHandler = nullptr;
-
-        float m_TimeEllapsed = 0.0f;
-
-        uint16_t m_Player1Score = 0, m_Player2Score = 0;
-
-        RNG m_RNG;
-
-        bool m_IsPaused = true;
-    };  
 }

@@ -1,35 +1,21 @@
-#pragma once
-
-#include "Entity.hpp"
-#include <array>
+#include "include/PhysicsObject.hpp"
 
 namespace Pong
 {
-    class PhysicsObject : public Entity
-    {
-    public:
-        PhysicsObject(
-            std::filesystem::path texPath, 
-            std::array<glm::vec4, 4> pos = {{
-                    glm::vec4(16.0f, 9.0f, 1.0f, 1.0f), // top right
-                    glm::vec4(16.0f, -9.0f, 1.0f, 0.0f), // bottom right
-                    glm::vec4(-16.0f, -9.0f, 0.0f, 0.0f), // bottom left
-                    glm::vec4(-16.0f, 9.0f, 0.0f, 1.0f) // top left
-                }}
-            )
+    PhysicsObject::PhysicsObject(std::filesystem::path texPath, std::array<glm::vec4, 4> pos)
             :Entity(texPath, pos), m_Velocity(glm::vec2(0.0f, 0.0f))
         {}
 
-        const glm::vec2& GetVelocity(void) const
+        const glm::vec2& PhysicsObject::GetVelocity(void) const
         {
             return m_Velocity;
         }
-        void SetVelocity(const glm::vec2 velocity)
+        void PhysicsObject::SetVelocity(const glm::vec2 velocity)
         {
             m_Velocity = velocity;
         }
 
-        bool CollidesWith(const PhysicsObject& other) 
+        bool PhysicsObject::CollidesWith(const PhysicsObject& other) 
         {
             // Get world positions (your actual function)
             const auto& pos1 = this->GetWorldPosition();
@@ -60,12 +46,8 @@ namespace Pong
                     r1_bottom >= r2_top    && r1_top    <= r2_bottom);
         }
 
-        void Update(float dt)
+        void PhysicsObject::Update(float dt)
         {
             this->AddTranslate(glm::vec3(m_Velocity.x * dt, m_Velocity.y * dt, 0.0f));
         }
-    private:
-        glm::vec2 m_Velocity;
-
-    };
 }
