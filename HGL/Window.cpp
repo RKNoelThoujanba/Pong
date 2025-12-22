@@ -88,7 +88,6 @@ namespace HGL
             return;
         }
 
-        glfwInit();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -96,10 +95,18 @@ namespace HGL
         glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, properties.DebugMode ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, properties.Resizeable ? GLFW_TRUE : GLFW_FALSE);
 
+        if(m_windowProperties.Width == 0 && m_windowProperties.Height == 0)
+        {
+            const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            m_windowProperties.Width = mode->width;
+            m_windowProperties.Height = mode->height;
+            m_windowProperties.Fullscreen = true;
+        }
+
         m_window = glfwCreateWindow(
-            properties.Width, properties.Height, 
-            properties.Title.data(), 
-            properties.Fullscreen ? glfwGetPrimaryMonitor() : static_cast<GLFWmonitor*>(nullptr), 
+            m_windowProperties.Width, m_windowProperties.Height, 
+            m_windowProperties.Title.data(), 
+            m_windowProperties.Fullscreen ? glfwGetPrimaryMonitor() : static_cast<GLFWmonitor*>(nullptr), 
             nullptr
         );
         if(m_window == nullptr)
@@ -108,7 +115,7 @@ namespace HGL
             return;
         }
         glfwMakeContextCurrent(m_window);
-        glfwSwapInterval(static_cast<int>(properties.VSync));
+        glfwSwapInterval(static_cast<int>(m_windowProperties.VSync));
 
         if(!gladLoadGL(glfwGetProcAddress))
         {
@@ -127,7 +134,7 @@ namespace HGL
             glViewport(0, 0, width, height);
         });
 
-        if(properties.DebugMode)
+        if(m_windowProperties.DebugMode)
         {
             glEnable(GL_DEBUG_OUTPUT);
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);

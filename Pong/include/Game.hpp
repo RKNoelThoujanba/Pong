@@ -36,10 +36,10 @@ namespace Pong
         //translate->rotate->scale
         void RunGame();
     private:
-        std::unique_ptr<PhysicsObject> m_Ball, m_Paddle1, m_Paddle2;
         std::unique_ptr<HGL::Window> m_Window = nullptr;
         std::unique_ptr<HGL::Shader> m_Shader = nullptr;
         std::unique_ptr<HGL::EventHandler> m_EventHandler = nullptr;
+        std::unique_ptr<PhysicsObject> m_Ball, m_Paddle1, m_Paddle2;
 
         float m_TimeEllapsed = 0.0f;
 
